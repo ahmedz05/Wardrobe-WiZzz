@@ -1,108 +1,73 @@
-\# Wardrobe-WIZzz Roadmap
+# Wardrobe-WIZzz Roadmap
 
-
-
-\## Vision
-
-
+## Vision
 
 Wardrobe-WIZzz is an AI-powered wardrobe management and fashion intelligence platform that helps users organize clothing, build outfits, track collections, and receive personalized style recommendations.
 
+---
 
+## Phase 1 - Foundation
 
-\---
+- [x] GitHub Repository
 
+- [x] FastAPI Backend
 
+- [x] PostgreSQL Database
 
-\## Phase 1 - Foundation
+- [x] SQLAlchemy Integration
 
+- [x] Initial Documentation
 
+- [ ] Authentication System
 
-\- \[x] GitHub Repository
+- [ ] User Profiles
 
-\- \[x] FastAPI Backend
+---
 
-\- \[x] PostgreSQL Database
+## Phase 2 - Wardrobe Management
 
-\- \[x] SQLAlchemy Integration
+- [ ] Clothing Item Management
 
-\- \[x] Initial Documentation
+- [ ] Categories & Subcategories
 
-\- \[ ] Authentication System
+- [ ] Brand Database
 
-\- \[ ] User Profiles
+- [ ] Color Classification
 
+- [ ] Fit Classification
 
+- [ ] Seasonal Classification
 
-\---
+---
 
+## Phase 3 - Outfit Generation
 
+- [ ] Outfit Builder
 
-\## Phase 2 - Wardrobe Management
+- [ ] Outfit Recommendation Engine
 
+- [ ] Outfit Scoring System
 
+---
 
-\- \[ ] Clothing Item Management
+## Phase 4 - Fashion Intelligence
 
-\- \[ ] Categories \& Subcategories
+- [ ] Color Theory Engine
 
-\- \[ ] Brand Database
+- [ ] Silhouette Engine
 
-\- \[ ] Color Classification
+- [ ] Body Type Engine
 
-\- \[ ] Fit Classification
+- [ ] Style DNA Engine
 
-\- \[ ] Seasonal Classification
+---
 
+## Phase 5 - AI Integration
 
+- [ ] Clothing Recognition
 
-\---
+- [ ] Brand Recognition
 
+- [ ] AI Stylist Assistant
 
-
-\## Phase 3 - Outfit Generation
-
-
-
-\- \[ ] Outfit Builder
-
-\- \[ ] Outfit Recommendation Engine
-
-\- \[ ] Outfit Scoring System
-
-
-
-\---
-
-
-
-\## Phase 4 - Fashion Intelligence
-
-
-
-\- \[ ] Color Theory Engine
-
-\- \[ ] Silhouette Engine
-
-\- \[ ] Body Type Engine
-
-\- \[ ] Style DNA Engine
-
-
-
-\---
-
-
-
-\## Phase 5 - AI Integration
-
-
-
-\- \[ ] Clothing Recognition
-
-\- \[ ] Brand Recognition
-
-\- \[ ] AI Stylist Assistant
-
-\- \[ ] Fashion Knowledge Base
-
+- [ ] Fashion Knowledge Base
