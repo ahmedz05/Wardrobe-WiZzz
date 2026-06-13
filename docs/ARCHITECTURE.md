@@ -1,92 +1,62 @@
-\# Wardrobe-WIZzz Architecture
+# Wardrobe-WIZzz Architecture
 
-
-
-\## Technology Stack
-
-
+## Technology Stack
 
 Backend:
 
-\- FastAPI
+- FastAPI
 
-\- Python
-
-
+- Python
 
 Database:
 
-\- PostgreSQL
+- PostgreSQL
 
-\- SQLAlchemy
-
-
+- SQLAlchemy
 
 Frontend:
 
-\- Flutter (Planned)
-
-
+- Flutter (Planned)
 
 AI:
 
-\- Computer Vision
+- Computer Vision
 
-\- Recommendation Systems
+- Recommendation Systems
 
-\- Retrieval-Augmented Generation (RAG)
+- Retrieval-Augmented Generation (RAG)
 
+---
 
-
-\---
-
-
-
-\## Project Structure
-
-
+## Project Structure
 
 backend/
 
 ├── app/
 
-│   ├── models/
+│ ├── models/
 
-│   ├── routes/
+│ ├── routes/
 
-│   ├── schemas/
+│ ├── schemas/
 
-│   ├── services/
+│ ├── services/
 
-│   ├── fashion\_engine/
+│ ├── fashion_engine/
 
-│   └── main.py
-
-
+│ └── main.py
 
 docs/
 
-
-
 assets/
-
-
 
 frontend/
 
-
-
 database/
 
+---
 
-
-\---
-
-
-
-\## Request Flow
-
-
+## Request Flow
 
 Client
 
@@ -98,23 +68,16 @@ Client
 
 → Database
 
+---
 
+## Core Modules
 
-\---
+- User Management
 
+- Wardrobe Management
 
+- Outfit Generation
 
-\## Core Modules
+- Collection Tracking
 
-
-
-\- User Management
-
-\- Wardrobe Management
-
-\- Outfit Generation
-
-\- Collection Tracking
-
-\- Fashion Intelligence Engine
-
+- Fashion Intelligence Engine
