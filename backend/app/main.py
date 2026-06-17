@@ -1,14 +1,16 @@
 from fastapi import FastAPI
 from app.routes.user_routes import router as user_router
+from app.database import engine, Base
+from app.models.user import User
 
-app = FastAPI(
-    title="Wardrobe-WIZzz API"
-)
+Base.metadata.create_all(bind=engine)
 
-app.include_router(user_router)
+app = FastAPI()
+
 
 @app.get("/")
 def home():
-    return {
-        "message": "Welcome to Wardrobe-WIZzz"
-    }
+    return {"status": "backend working"}
+
+
+app.include_router(user_router)
