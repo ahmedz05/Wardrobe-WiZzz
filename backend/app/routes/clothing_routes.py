@@ -36,9 +36,7 @@ def add_clothing(
 
         name=clothing.name,
 
-        category=clothing.category,
-
-        subcategory=clothing.subcategory,
+        subcategory_id=clothing.subcategory_id,
 
         color=clothing.color,
 
@@ -96,9 +94,7 @@ def edit_clothing(
 
         name=clothing.name,
 
-        category=clothing.category,
-
-        subcategory=clothing.subcategory,
+        subcategory_id=clothing.subcategory_id,
 
         color=clothing.color,
 

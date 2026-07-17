@@ -4,9 +4,7 @@ from pydantic import BaseModel
 class ClothingCreate(BaseModel):
     name: str
 
-    category: str
-
-    subcategory: str | None = None
+    subcategory_id: int | None = None
 
     color: str | None = None
 
@@ -26,9 +24,7 @@ class ClothingCreate(BaseModel):
 class ClothingUpdate(BaseModel):
     name: str
 
-    category: str
-
-    subcategory: str | None = None
+    subcategory_id: int | None = None
 
     color: str | None = None
 

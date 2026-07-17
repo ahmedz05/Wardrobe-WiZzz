@@ -10,8 +10,7 @@ from app.models.clothing import Clothing
 def create_clothing(
     user_id: int,
     name: str,
-    category: str,
-    subcategory: str | None = None,
+    subcategory_id: int | None = None,
     color: str | None = None,
     fit: str | None = None,
     material: str | None = None,
@@ -25,8 +24,7 @@ def create_clothing(
     new_clothing = Clothing(
         user_id=user_id,
         name=name,
-        category=category,
-        subcategory=subcategory,
+        subcategory_id=subcategory_id,
         color=color,
         fit=fit,
         material=material,
@@ -84,8 +82,7 @@ def update_clothing(
     clothing_id: int,
     user_id: int,
     name: str,
-    category: str,
-    subcategory: str | None = None,
+    subcategory_id: int | None = None,
     color: str | None = None,
     fit: str | None = None,
     material: str | None = None,
@@ -110,8 +107,7 @@ def update_clothing(
         return None
 
     clothing.name = name
-    clothing.category = category
-    clothing.subcategory = subcategory
+    clothing.subcategory_id = subcategory_id
     clothing.color = color
     clothing.fit = fit
     clothing.material = material

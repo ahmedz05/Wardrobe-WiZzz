@@ -24,13 +24,10 @@ class Clothing(Base):
         nullable=False
     )
 
-    category = Column(
-        String,
-        nullable=False
-    )
-
-    subcategory = Column(
-        String
+    subcategory_id = Column(
+        Integer,
+        ForeignKey("subcategories.id"),
+        nullable=True
     )
 
     color = Column(
@@ -61,7 +58,14 @@ class Clothing(Base):
         String
     )
 
+
     owner = relationship(
         "User",
+        back_populates="clothes"
+    )
+
+
+    subcategory = relationship(
+        "SubCategory",
         back_populates="clothes"
     )
