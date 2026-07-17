@@ -11,11 +11,14 @@ def create_clothing(
     user_id: int,
     name: str,
     category: str,
-    color: str,
-    season: str,
-    style: str,
-    brand: str,
-    image_url: str
+    subcategory: str | None = None,
+    color: str | None = None,
+    fit: str | None = None,
+    material: str | None = None,
+    season: str | None = None,
+    style: str | None = None,
+    brand: str | None = None,
+    image_url: str | None = None
 ):
     db = SessionLocal()
 
@@ -23,7 +26,10 @@ def create_clothing(
         user_id=user_id,
         name=name,
         category=category,
+        subcategory=subcategory,
         color=color,
+        fit=fit,
+        material=material,
         season=season,
         style=style,
         brand=brand,
@@ -43,7 +49,9 @@ def get_user_clothing(user_id: int):
 
     clothes = (
         db.query(Clothing)
-        .filter(Clothing.user_id == user_id)
+        .filter(
+            Clothing.user_id == user_id
+        )
         .all()
     )
 
@@ -77,11 +85,14 @@ def update_clothing(
     user_id: int,
     name: str,
     category: str,
-    color: str,
-    season: str,
-    style: str,
-    brand: str,
-    image_url: str
+    subcategory: str | None = None,
+    color: str | None = None,
+    fit: str | None = None,
+    material: str | None = None,
+    season: str | None = None,
+    style: str | None = None,
+    brand: str | None = None,
+    image_url: str | None = None
 ):
     db = SessionLocal()
 
@@ -100,7 +111,10 @@ def update_clothing(
 
     clothing.name = name
     clothing.category = category
+    clothing.subcategory = subcategory
     clothing.color = color
+    clothing.fit = fit
+    clothing.material = material
     clothing.season = season
     clothing.style = style
     clothing.brand = brand
@@ -166,7 +180,12 @@ def upload_clothing_image(
 
     extension = os.path.splitext(file.filename)[1].lower()
 
-    allowed_extensions = [".jpg", ".jpeg", ".png", ".webp"]
+    allowed_extensions = [
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".webp"
+    ]
 
     if extension not in allowed_extensions:
         db.close()
@@ -174,7 +193,10 @@ def upload_clothing_image(
 
     filename = f"{uuid.uuid4()}{extension}"
 
-    filepath = os.path.join(uploads_dir, filename)
+    filepath = os.path.join(
+        uploads_dir,
+        filename
+    )
 
     with open(filepath, "wb") as image:
         image.write(file.file.read())

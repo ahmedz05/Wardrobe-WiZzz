@@ -1,11 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 
 from app.models.user import User
+
 from app.schemas.clothing_schema import (
     ClothingCreate,
     ClothingUpdate
 )
+
 from app.services.auth_dependencies import get_current_user
+
 from app.services.clothing_service import (
     create_clothing,
     get_user_clothing,
@@ -13,6 +16,7 @@ from app.services.clothing_service import (
     delete_clothing,
     upload_clothing_image
 )
+
 
 router = APIRouter()
 
@@ -29,12 +33,25 @@ def add_clothing(
 
     new_clothing = create_clothing(
         user_id=current_user.id,
+
         name=clothing.name,
+
         category=clothing.category,
+
+        subcategory=clothing.subcategory,
+
         color=clothing.color,
+
+        fit=clothing.fit,
+
+        material=clothing.material,
+
         season=clothing.season,
+
         style=clothing.style,
+
         brand=clothing.brand,
+
         image_url=clothing.image_url
     )
 
@@ -54,7 +71,9 @@ def get_clothing(
     current_user: User = Depends(get_current_user)
 ):
 
-    clothes = get_user_clothing(current_user.id)
+    clothes = get_user_clothing(
+        current_user.id
+    )
 
     return clothes
 
@@ -72,13 +91,27 @@ def edit_clothing(
 
     updated = update_clothing(
         clothing_id=clothing_id,
+
         user_id=current_user.id,
+
         name=clothing.name,
+
         category=clothing.category,
+
+        subcategory=clothing.subcategory,
+
         color=clothing.color,
+
+        fit=clothing.fit,
+
+        material=clothing.material,
+
         season=clothing.season,
+
         style=clothing.style,
+
         brand=clothing.brand,
+
         image_url=clothing.image_url
     )
 
@@ -106,6 +139,7 @@ def remove_clothing(
 
     deleted = delete_clothing(
         clothing_id=clothing_id,
+
         user_id=current_user.id
     )
 
@@ -127,13 +161,17 @@ def remove_clothing(
 @router.post("/clothing/{clothing_id}/image")
 def upload_image(
     clothing_id: int,
+
     file: UploadFile = File(...),
+
     current_user: User = Depends(get_current_user)
 ):
 
     clothing = upload_clothing_image(
         clothing_id=clothing_id,
+
         user_id=current_user.id,
+
         file=file
     )
 
@@ -145,6 +183,8 @@ def upload_image(
 
     return {
         "message": "Image uploaded successfully!",
+
         "image_url": clothing.image_url,
+
         "clothing": clothing
     }
