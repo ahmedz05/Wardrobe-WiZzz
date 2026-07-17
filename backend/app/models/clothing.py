@@ -5,6 +5,7 @@ from app.database import Base
 
 
 class Clothing(Base):
+
     __tablename__ = "clothing"
 
     id = Column(
@@ -51,6 +52,22 @@ class Clothing(Base):
     )
 
     brand = Column(
+        String
+    )
+
+    silhouette = Column(
+        String
+    )
+
+    layering_role = Column(
+        String
+    )
+
+    warmth_level = Column(
+        String
+    )
+
+    occasion = Column(
         String
     )
 

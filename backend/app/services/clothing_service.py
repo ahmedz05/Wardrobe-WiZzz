@@ -17,32 +17,58 @@ def create_clothing(
     season: str | None = None,
     style: str | None = None,
     brand: str | None = None,
+    silhouette: str | None = None,
+    layering_role: str | None = None,
+    warmth_level: str | None = None,
+    occasion: str | None = None,
     image_url: str | None = None
 ):
     db = SessionLocal()
 
     new_clothing = Clothing(
         user_id=user_id,
+
         name=name,
+
         subcategory_id=subcategory_id,
+
         color=color,
+
         fit=fit,
+
         material=material,
+
         season=season,
+
         style=style,
+
         brand=brand,
+
+        silhouette=silhouette,
+
+        layering_role=layering_role,
+
+        warmth_level=warmth_level,
+
+        occasion=occasion,
+
         image_url=image_url
     )
 
     db.add(new_clothing)
+
     db.commit()
+
     db.refresh(new_clothing)
+
     db.close()
 
     return new_clothing
 
 
+
 def get_user_clothing(user_id: int):
+
     db = SessionLocal()
 
     clothes = (
@@ -58,10 +84,12 @@ def get_user_clothing(user_id: int):
     return clothes
 
 
+
 def get_clothing_by_id(
     clothing_id: int,
     user_id: int
 ):
+
     db = SessionLocal()
 
     clothing = (
@@ -76,6 +104,7 @@ def get_clothing_by_id(
     db.close()
 
     return clothing
+
 
 
 def update_clothing(
@@ -89,8 +118,13 @@ def update_clothing(
     season: str | None = None,
     style: str | None = None,
     brand: str | None = None,
+    silhouette: str | None = None,
+    layering_role: str | None = None,
+    warmth_level: str | None = None,
+    occasion: str | None = None,
     image_url: str | None = None
 ):
+
     db = SessionLocal()
 
     clothing = (
@@ -106,27 +140,49 @@ def update_clothing(
         db.close()
         return None
 
+
     clothing.name = name
+
     clothing.subcategory_id = subcategory_id
+
     clothing.color = color
+
     clothing.fit = fit
+
     clothing.material = material
+
     clothing.season = season
+
     clothing.style = style
+
     clothing.brand = brand
+
+    clothing.silhouette = silhouette
+
+    clothing.layering_role = layering_role
+
+    clothing.warmth_level = warmth_level
+
+    clothing.occasion = occasion
+
     clothing.image_url = image_url
 
+
     db.commit()
+
     db.refresh(clothing)
+
     db.close()
 
     return clothing
+
 
 
 def delete_clothing(
     clothing_id: int,
     user_id: int
 ):
+
     db = SessionLocal()
 
     clothing = (
@@ -138,15 +194,22 @@ def delete_clothing(
         .first()
     )
 
+
     if not clothing:
+
         db.close()
+
         return False
 
+
     db.delete(clothing)
+
     db.commit()
+
     db.close()
 
     return True
+
 
 
 def upload_clothing_image(
@@ -154,7 +217,9 @@ def upload_clothing_image(
     user_id: int,
     file: UploadFile
 ):
+
     db = SessionLocal()
+
 
     clothing = (
         db.query(Clothing)
@@ -165,16 +230,26 @@ def upload_clothing_image(
         .first()
     )
 
+
     if not clothing:
+
         db.close()
+
         return None
+
+
 
     uploads_dir = "uploads"
 
+
     if not os.path.exists(uploads_dir):
+
         os.makedirs(uploads_dir)
 
+
+
     extension = os.path.splitext(file.filename)[1].lower()
+
 
     allowed_extensions = [
         ".jpg",
@@ -183,24 +258,38 @@ def upload_clothing_image(
         ".webp"
     ]
 
+
     if extension not in allowed_extensions:
+
         db.close()
+
         return None
 
+
+
     filename = f"{uuid.uuid4()}{extension}"
+
 
     filepath = os.path.join(
         uploads_dir,
         filename
     )
 
+
     with open(filepath, "wb") as image:
+
         image.write(file.file.read())
+
+
 
     clothing.image_url = f"/uploads/{filename}"
 
+
     db.commit()
+
     db.refresh(clothing)
+
     db.close()
+
 
     return clothing
