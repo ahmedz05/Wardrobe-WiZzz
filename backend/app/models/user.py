@@ -34,3 +34,9 @@ class User(Base):
         "Clothing",
         back_populates="owner"
     )
+
+    profile = relationship(
+        "UserProfile",
+        back_populates="user",
+        uselist=False
+    )
