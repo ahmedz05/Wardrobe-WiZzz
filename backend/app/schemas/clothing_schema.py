@@ -3,19 +3,43 @@ from pydantic import BaseModel
 
 class ClothingCreate(BaseModel):
     name: str
+
     category: str
-    color: str
-    season: str
-    style: str
-    brand: str
-    image_url: str
+
+    subcategory: str | None = None
+
+    color: str | None = None
+
+    fit: str | None = None
+
+    material: str | None = None
+
+    season: str | None = None
+
+    style: str | None = None
+
+    brand: str | None = None
+
+    image_url: str | None = None
 
 
 class ClothingUpdate(BaseModel):
     name: str
+
     category: str
-    color: str
-    season: str
-    style: str
-    brand: str
-    image_url: str
+
+    subcategory: str | None = None
+
+    color: str | None = None
+
+    fit: str | None = None
+
+    material: str | None = None
+
+    season: str | None = None
+
+    style: str | None = None
+
+    brand: str | None = None
+
+    image_url: str | None = None

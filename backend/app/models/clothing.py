@@ -29,15 +29,37 @@ class Clothing(Base):
         nullable=False
     )
 
-    color = Column(String)
+    subcategory = Column(
+        String
+    )
 
-    season = Column(String)
+    color = Column(
+        String
+    )
 
-    style = Column(String)
+    fit = Column(
+        String
+    )
 
-    brand = Column(String)
+    material = Column(
+        String
+    )
 
-    image_url = Column(String)
+    season = Column(
+        String
+    )
+
+    style = Column(
+        String
+    )
+
+    brand = Column(
+        String
+    )
+
+    image_url = Column(
+        String
+    )
 
     owner = relationship(
         "User",
