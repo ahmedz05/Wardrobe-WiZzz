@@ -1,3 +1,8 @@
+import os
+import uuid
+
+from fastapi import UploadFile
+
 from app.database import SessionLocal
 from app.models.clothing import Clothing
 
@@ -132,3 +137,52 @@ def delete_clothing(
     db.close()
 
     return True
+
+
+def upload_clothing_image(
+    clothing_id: int,
+    user_id: int,
+    file: UploadFile
+):
+    db = SessionLocal()
+
+    clothing = (
+        db.query(Clothing)
+        .filter(
+            Clothing.id == clothing_id,
+            Clothing.user_id == user_id
+        )
+        .first()
+    )
+
+    if not clothing:
+        db.close()
+        return None
+
+    uploads_dir = "uploads"
+
+    if not os.path.exists(uploads_dir):
+        os.makedirs(uploads_dir)
+
+    extension = os.path.splitext(file.filename)[1].lower()
+
+    allowed_extensions = [".jpg", ".jpeg", ".png", ".webp"]
+
+    if extension not in allowed_extensions:
+        db.close()
+        return None
+
+    filename = f"{uuid.uuid4()}{extension}"
+
+    filepath = os.path.join(uploads_dir, filename)
+
+    with open(filepath, "wb") as image:
+        image.write(file.file.read())
+
+    clothing.image_url = f"/uploads/{filename}"
+
+    db.commit()
+    db.refresh(clothing)
+    db.close()
+
+    return clothing
