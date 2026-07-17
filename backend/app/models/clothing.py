@@ -1,11 +1,17 @@
 from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy.orm import relationship
+
 from app.database import Base
 
 
 class Clothing(Base):
     __tablename__ = "clothing"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(
+        Integer,
+        primary_key=True,
+        index=True
+    )
 
     user_id = Column(
         Integer,
@@ -13,9 +19,15 @@ class Clothing(Base):
         nullable=False
     )
 
-    name = Column(String, nullable=False)
+    name = Column(
+        String,
+        nullable=False
+    )
 
-    category = Column(String, nullable=False)
+    category = Column(
+        String,
+        nullable=False
+    )
 
     color = Column(String)
 
@@ -26,3 +38,8 @@ class Clothing(Base):
     brand = Column(String)
 
     image_url = Column(String)
+
+    owner = relationship(
+        "User",
+        back_populates="clothes"
+    )
