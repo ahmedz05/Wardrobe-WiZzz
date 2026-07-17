@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 
 from app.models.user import User
 from app.schemas.clothing_schema import (
@@ -9,7 +9,9 @@ from app.services.auth_dependencies import get_current_user
 from app.services.clothing_service import (
     create_clothing,
     get_user_clothing,
-    update_clothing
+    update_clothing,
+    delete_clothing,
+    upload_clothing_image
 )
 
 router = APIRouter()
@@ -18,6 +20,7 @@ router = APIRouter()
 # -------------------------
 # CREATE CLOTHING
 # -------------------------
+
 @router.post("/clothing")
 def add_clothing(
     clothing: ClothingCreate,
@@ -45,6 +48,7 @@ def add_clothing(
 # -------------------------
 # GET MY CLOTHES
 # -------------------------
+
 @router.get("/clothing")
 def get_clothing(
     current_user: User = Depends(get_current_user)
@@ -58,6 +62,7 @@ def get_clothing(
 # -------------------------
 # UPDATE CLOTHING
 # -------------------------
+
 @router.put("/clothing/{clothing_id}")
 def edit_clothing(
     clothing_id: int,
@@ -86,4 +91,60 @@ def edit_clothing(
     return {
         "message": "Clothing updated successfully!",
         "clothing": updated
+    }
+
+
+# -------------------------
+# DELETE CLOTHING
+# -------------------------
+
+@router.delete("/clothing/{clothing_id}")
+def remove_clothing(
+    clothing_id: int,
+    current_user: User = Depends(get_current_user)
+):
+
+    deleted = delete_clothing(
+        clothing_id=clothing_id,
+        user_id=current_user.id
+    )
+
+    if not deleted:
+        raise HTTPException(
+            status_code=404,
+            detail="Clothing item not found."
+        )
+
+    return {
+        "message": "Clothing deleted successfully!"
+    }
+
+
+# -------------------------
+# UPLOAD CLOTHING IMAGE
+# -------------------------
+
+@router.post("/clothing/{clothing_id}/image")
+def upload_image(
+    clothing_id: int,
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user)
+):
+
+    clothing = upload_clothing_image(
+        clothing_id=clothing_id,
+        user_id=current_user.id,
+        file=file
+    )
+
+    if not clothing:
+        raise HTTPException(
+            status_code=404,
+            detail="Clothing item not found or invalid image."
+        )
+
+    return {
+        "message": "Image uploaded successfully!",
+        "image_url": clothing.image_url,
+        "clothing": clothing
     }
