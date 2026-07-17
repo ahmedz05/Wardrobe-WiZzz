@@ -32,6 +32,7 @@ def add_clothing(
 ):
 
     new_clothing = create_clothing(
+
         user_id=current_user.id,
 
         name=clothing.name,
@@ -50,14 +51,24 @@ def add_clothing(
 
         brand=clothing.brand,
 
+        silhouette=clothing.silhouette,
+
+        layering_role=clothing.layering_role,
+
+        warmth_level=clothing.warmth_level,
+
+        occasion=clothing.occasion,
+
         image_url=clothing.image_url
     )
+
 
     return {
         "message": "Clothing added successfully!",
         "id": new_clothing.id,
         "name": new_clothing.name
     }
+
 
 
 # -------------------------
@@ -76,6 +87,7 @@ def get_clothing(
     return clothes
 
 
+
 # -------------------------
 # UPDATE CLOTHING
 # -------------------------
@@ -88,6 +100,7 @@ def edit_clothing(
 ):
 
     updated = update_clothing(
+
         clothing_id=clothing_id,
 
         user_id=current_user.id,
@@ -108,19 +121,31 @@ def edit_clothing(
 
         brand=clothing.brand,
 
+        silhouette=clothing.silhouette,
+
+        layering_role=clothing.layering_role,
+
+        warmth_level=clothing.warmth_level,
+
+        occasion=clothing.occasion,
+
         image_url=clothing.image_url
     )
 
+
     if not updated:
+
         raise HTTPException(
             status_code=404,
             detail="Clothing item not found."
         )
 
+
     return {
         "message": "Clothing updated successfully!",
         "clothing": updated
     }
+
 
 
 # -------------------------
@@ -134,24 +159,29 @@ def remove_clothing(
 ):
 
     deleted = delete_clothing(
+
         clothing_id=clothing_id,
 
         user_id=current_user.id
     )
 
+
     if not deleted:
+
         raise HTTPException(
             status_code=404,
             detail="Clothing item not found."
         )
+
 
     return {
         "message": "Clothing deleted successfully!"
     }
 
 
+
 # -------------------------
-# UPLOAD CLOTHING IMAGE
+# UPLOAD IMAGE
 # -------------------------
 
 @router.post("/clothing/{clothing_id}/image")
@@ -164,6 +194,7 @@ def upload_image(
 ):
 
     clothing = upload_clothing_image(
+
         clothing_id=clothing_id,
 
         user_id=current_user.id,
@@ -171,13 +202,17 @@ def upload_image(
         file=file
     )
 
+
     if not clothing:
+
         raise HTTPException(
             status_code=404,
             detail="Clothing item not found or invalid image."
         )
 
+
     return {
+
         "message": "Image uploaded successfully!",
 
         "image_url": clothing.image_url,
