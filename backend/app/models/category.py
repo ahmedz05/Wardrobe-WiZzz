@@ -1,17 +1,11 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, String, Integer, ForeignKey
 from sqlalchemy.orm import relationship
 
-from app.database import Base
+from app.core.base_model import BaseModel
 
 
-class Category(Base):
+class Category(BaseModel):
     __tablename__ = "categories"
-
-    id = Column(
-        Integer,
-        primary_key=True,
-        index=True
-    )
 
     name = Column(
         String,
@@ -21,18 +15,13 @@ class Category(Base):
 
     subcategories = relationship(
         "SubCategory",
-        back_populates="category"
+        back_populates="category",
+        cascade="all, delete-orphan"
     )
 
 
-class SubCategory(Base):
+class SubCategory(BaseModel):
     __tablename__ = "subcategories"
-
-    id = Column(
-        Integer,
-        primary_key=True,
-        index=True
-    )
 
     name = Column(
         String,
@@ -45,12 +34,10 @@ class SubCategory(Base):
         nullable=False
     )
 
-
     category = relationship(
         "Category",
         back_populates="subcategories"
     )
-
 
     clothes = relationship(
         "Clothing",
