@@ -1,18 +1,11 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, String, Integer, ForeignKey
 from sqlalchemy.orm import relationship
 
-from app.database import Base
+from app.core.base_model import BaseModel
 
 
-class Clothing(Base):
-
+class Clothing(BaseModel):
     __tablename__ = "clothing"
-
-    id = Column(
-        Integer,
-        primary_key=True,
-        index=True
-    )
 
     user_id = Column(
         Integer,
@@ -31,56 +24,32 @@ class Clothing(Base):
         nullable=True
     )
 
-    color = Column(
-        String
-    )
+    color = Column(String)
 
-    fit = Column(
-        String
-    )
+    fit = Column(String)
 
-    material = Column(
-        String
-    )
+    material = Column(String)
 
-    season = Column(
-        String
-    )
+    season = Column(String)
 
-    style = Column(
-        String
-    )
+    style = Column(String)
 
-    brand = Column(
-        String
-    )
+    brand = Column(String)
 
-    silhouette = Column(
-        String
-    )
+    silhouette = Column(String)
 
-    layering_role = Column(
-        String
-    )
+    layering_role = Column(String)
 
-    warmth_level = Column(
-        String
-    )
+    warmth_level = Column(String)
 
-    occasion = Column(
-        String
-    )
+    occasion = Column(String)
 
-    image_url = Column(
-        String
-    )
-
+    image_url = Column(String)
 
     owner = relationship(
         "User",
         back_populates="clothes"
     )
-
 
     subcategory = relationship(
         "SubCategory",

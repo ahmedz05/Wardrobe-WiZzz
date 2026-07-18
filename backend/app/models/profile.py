@@ -1,17 +1,11 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, String, Integer, ForeignKey
 from sqlalchemy.orm import relationship
 
-from app.database import Base
+from app.core.base_model import BaseModel
 
 
-class UserProfile(Base):
+class UserProfile(BaseModel):
     __tablename__ = "user_profiles"
-
-    id = Column(
-        Integer,
-        primary_key=True,
-        index=True
-    )
 
     user_id = Column(
         Integer,

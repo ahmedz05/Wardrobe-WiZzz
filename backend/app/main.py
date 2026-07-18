@@ -1,40 +1,41 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
-from app.database import Base, engine
-
 from app.routes.user_routes import router as user_router
 from app.routes.clothing_routes import router as clothing_router
-
-Base.metadata.create_all(bind=engine)
+from app.routes.upload_routes import router as upload_router
+from app.routes.category_routes import router as category_router
 
 app = FastAPI(
     title="Wardrobe-WIZzz API",
-    description="AI Powered Smart Wardrobe Assistant",
-    version="1.0.0"
+    description="AI-Powered Smart Wardrobe & Fashion Intelligence Platform",
+    version="1.0.0",
 )
 
+# Serve uploaded images
 app.mount(
     "/uploads",
     StaticFiles(directory="uploads"),
-    name="uploads"
+    name="uploads",
 )
+
+# -------------------------
+# ROUTERS
+# -------------------------
 
 app.include_router(user_router)
 app.include_router(clothing_router)
+app.include_router(upload_router)
+app.include_router(category_router)
 
+# -------------------------
+# ROOT
+# -------------------------
 
-@app.get("/")
+@app.get("/", tags=["Root"])
 def root():
     return {
-        "message": "Welcome to Wardrobe-WIZzz API",
-        "status": "Running 🚀",
-        "version": "1.0.0"
-    }
-
-
-@app.get("/health")
-def health():
-    return {
-        "status": "healthy"
+        "message": "Wardrobe-WIZzz API is running!",
+        "version": "1.0.0",
+        "status": "online",
     }

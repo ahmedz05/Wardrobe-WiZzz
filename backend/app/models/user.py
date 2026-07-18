@@ -1,17 +1,11 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, String
 from sqlalchemy.orm import relationship
 
-from app.database import Base
+from app.core.base_model import BaseModel
 
 
-class User(Base):
+class User(BaseModel):
     __tablename__ = "users"
-
-    id = Column(
-        Integer,
-        primary_key=True,
-        index=True
-    )
 
     username = Column(
         String,
