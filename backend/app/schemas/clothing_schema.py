@@ -1,60 +1,52 @@
-from pydantic import BaseModel
+from datetime import date
+from typing import Optional
+
+from pydantic import BaseModel, ConfigDict
 
 
-class ClothingCreate(BaseModel):
-
+class ClothingBase(BaseModel):
     name: str
 
-    subcategory_id: int | None = None
+    subcategory_id: Optional[int] = None
+    brand_id: Optional[int] = None
+    material_id: Optional[int] = None
+    color_id: Optional[int] = None
 
-    color: str | None = None
+    season: Optional[str] = None
+    style: Optional[str] = None
+    fit: Optional[str] = None
+    silhouette: Optional[str] = None
+    layering_role: Optional[str] = None
+    warmth_level: Optional[str] = None
+    occasion: Optional[str] = None
 
-    fit: str | None = None
+    image_url: Optional[str] = None
 
-    material: str | None = None
+    # Metadata
+    condition: Optional[str] = None
+    favorite: bool = False
 
-    season: str | None = None
+    purchase_date: Optional[date] = None
+    purchase_price: float = 0.0
+    currency: Optional[str] = None
 
-    style: str | None = None
+    last_worn: Optional[date] = None
+    times_worn: int = 0
 
-    brand: str | None = None
-
-    silhouette: str | None = None
-
-    layering_role: str | None = None
-
-    warmth_level: str | None = None
-
-    occasion: str | None = None
-
-    image_url: str | None = None
+    notes: Optional[str] = None
 
 
+class ClothingCreate(ClothingBase):
+    pass
 
-class ClothingUpdate(BaseModel):
 
-    name: str
+class ClothingUpdate(ClothingBase):
+    pass
 
-    subcategory_id: int | None = None
 
-    color: str | None = None
+class ClothingResponse(ClothingBase):
+    id: int
+    user_id: int
+    is_active: bool
 
-    fit: str | None = None
-
-    material: str | None = None
-
-    season: str | None = None
-
-    style: str | None = None
-
-    brand: str | None = None
-
-    silhouette: str | None = None
-
-    layering_role: str | None = None
-
-    warmth_level: str | None = None
-
-    occasion: str | None = None
-
-    image_url: str | None = None
+    model_config = ConfigDict(from_attributes=True)

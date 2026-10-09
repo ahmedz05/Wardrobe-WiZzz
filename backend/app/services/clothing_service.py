@@ -1,295 +1,140 @@
-import os
-import uuid
+from sqlalchemy.orm import Session
 
-from fastapi import UploadFile
-
-from app.database import SessionLocal
 from app.models.clothing import Clothing
+from app.models.color import Color
+from app.schemas.clothing_schema import ClothingCreate, ClothingUpdate
 
 
 def create_clothing(
+    db: Session,
     user_id: int,
-    name: str,
-    subcategory_id: int | None = None,
-    color: str | None = None,
-    fit: str | None = None,
-    material: str | None = None,
-    season: str | None = None,
-    style: str | None = None,
-    brand: str | None = None,
-    silhouette: str | None = None,
-    layering_role: str | None = None,
-    warmth_level: str | None = None,
-    occasion: str | None = None,
-    image_url: str | None = None
+    clothing: ClothingCreate,
 ):
-    db = SessionLocal()
+    clothing_data = clothing.model_dump()
 
-    new_clothing = Clothing(
+    color_id = clothing_data.get("color_id")
+
+    if color_id is not None:
+        color = (
+            db.query(Color)
+            .filter(
+                Color.id == color_id,
+                Color.is_active.is_(True),
+            )
+            .first()
+        )
+
+        if not color:
+            raise ValueError(
+                "The selected color does not exist or is inactive."
+            )
+
+    db_clothing = Clothing(
         user_id=user_id,
-
-        name=name,
-
-        subcategory_id=subcategory_id,
-
-        color=color,
-
-        fit=fit,
-
-        material=material,
-
-        season=season,
-
-        style=style,
-
-        brand=brand,
-
-        silhouette=silhouette,
-
-        layering_role=layering_role,
-
-        warmth_level=warmth_level,
-
-        occasion=occasion,
-
-        image_url=image_url
+        **clothing_data,
     )
 
-    db.add(new_clothing)
-
+    db.add(db_clothing)
     db.commit()
+    db.refresh(db_clothing)
 
-    db.refresh(new_clothing)
-
-    db.close()
-
-    return new_clothing
+    return db_clothing
 
 
-
-def get_user_clothing(user_id: int):
-
-    db = SessionLocal()
-
-    clothes = (
+def get_user_clothing(
+    db: Session,
+    user_id: int,
+):
+    return (
         db.query(Clothing)
         .filter(
-            Clothing.user_id == user_id
+            Clothing.user_id == user_id,
+            Clothing.is_active.is_(True),
         )
         .all()
     )
 
-    db.close()
-
-    return clothes
-
-
 
 def get_clothing_by_id(
+    db: Session,
     clothing_id: int,
-    user_id: int
+    user_id: int,
 ):
-
-    db = SessionLocal()
-
-    clothing = (
+    return (
         db.query(Clothing)
         .filter(
             Clothing.id == clothing_id,
-            Clothing.user_id == user_id
+            Clothing.user_id == user_id,
+            Clothing.is_active.is_(True),
         )
         .first()
     )
-
-    db.close()
-
-    return clothing
-
 
 
 def update_clothing(
+    db: Session,
     clothing_id: int,
     user_id: int,
-    name: str,
-    subcategory_id: int | None = None,
-    color: str | None = None,
-    fit: str | None = None,
-    material: str | None = None,
-    season: str | None = None,
-    style: str | None = None,
-    brand: str | None = None,
-    silhouette: str | None = None,
-    layering_role: str | None = None,
-    warmth_level: str | None = None,
-    occasion: str | None = None,
-    image_url: str | None = None
+    clothing_data: ClothingUpdate,
 ):
-
-    db = SessionLocal()
-
-    clothing = (
-        db.query(Clothing)
-        .filter(
-            Clothing.id == clothing_id,
-            Clothing.user_id == user_id
-        )
-        .first()
+    clothing = get_clothing_by_id(
+        db=db,
+        clothing_id=clothing_id,
+        user_id=user_id,
     )
 
     if not clothing:
-        db.close()
         return None
 
+    update_data = clothing_data.model_dump(
+        exclude_unset=True
+    )
 
-    clothing.name = name
+    color_id = update_data.get("color_id")
 
-    clothing.subcategory_id = subcategory_id
+    if color_id is not None:
+        color = (
+            db.query(Color)
+            .filter(
+                Color.id == color_id,
+                Color.is_active.is_(True),
+            )
+            .first()
+        )
 
-    clothing.color = color
+        if not color:
+            raise ValueError(
+                "The selected color does not exist or is inactive."
+            )
 
-    clothing.fit = fit
-
-    clothing.material = material
-
-    clothing.season = season
-
-    clothing.style = style
-
-    clothing.brand = brand
-
-    clothing.silhouette = silhouette
-
-    clothing.layering_role = layering_role
-
-    clothing.warmth_level = warmth_level
-
-    clothing.occasion = occasion
-
-    clothing.image_url = image_url
-
+    for key, value in update_data.items():
+        setattr(
+            clothing,
+            key,
+            value,
+        )
 
     db.commit()
-
     db.refresh(clothing)
-
-    db.close()
 
     return clothing
 
 
-
 def delete_clothing(
-    clothing_id: int,
-    user_id: int
-):
-
-    db = SessionLocal()
-
-    clothing = (
-        db.query(Clothing)
-        .filter(
-            Clothing.id == clothing_id,
-            Clothing.user_id == user_id
-        )
-        .first()
-    )
-
-
-    if not clothing:
-
-        db.close()
-
-        return False
-
-
-    db.delete(clothing)
-
-    db.commit()
-
-    db.close()
-
-    return True
-
-
-
-def upload_clothing_image(
+    db: Session,
     clothing_id: int,
     user_id: int,
-    file: UploadFile
 ):
-
-    db = SessionLocal()
-
-
-    clothing = (
-        db.query(Clothing)
-        .filter(
-            Clothing.id == clothing_id,
-            Clothing.user_id == user_id
-        )
-        .first()
+    clothing = get_clothing_by_id(
+        db=db,
+        clothing_id=clothing_id,
+        user_id=user_id,
     )
-
 
     if not clothing:
-
-        db.close()
-
         return None
 
-
-
-    uploads_dir = "uploads"
-
-
-    if not os.path.exists(uploads_dir):
-
-        os.makedirs(uploads_dir)
-
-
-
-    extension = os.path.splitext(file.filename)[1].lower()
-
-
-    allowed_extensions = [
-        ".jpg",
-        ".jpeg",
-        ".png",
-        ".webp"
-    ]
-
-
-    if extension not in allowed_extensions:
-
-        db.close()
-
-        return None
-
-
-
-    filename = f"{uuid.uuid4()}{extension}"
-
-
-    filepath = os.path.join(
-        uploads_dir,
-        filename
-    )
-
-
-    with open(filepath, "wb") as image:
-
-        image.write(file.file.read())
-
-
-
-    clothing.image_url = f"/uploads/{filename}"
-
-
+    db.delete(clothing)
     db.commit()
-
-    db.refresh(clothing)
-
-    db.close()
-
 
     return clothing

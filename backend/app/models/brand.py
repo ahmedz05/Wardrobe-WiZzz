@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Text
+from sqlalchemy.orm import relationship
 
 from app.core.base_model import BaseModel
 
@@ -41,4 +42,9 @@ class Brand(BaseModel):
     logo_url = Column(
         String,
         nullable=True
+    )
+
+    clothing_items = relationship(
+        "Clothing",
+        back_populates="brand"
     )

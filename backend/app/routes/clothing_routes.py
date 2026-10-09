@@ -1,20 +1,19 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
 
+from app.database import get_db
 from app.models.user import User
-
 from app.schemas.clothing_schema import (
     ClothingCreate,
-    ClothingUpdate
+    ClothingUpdate,
+    ClothingResponse,
 )
-
 from app.services.auth_dependencies import get_current_user
-
 from app.services.clothing_service import (
     create_clothing,
     get_user_clothing,
     update_clothing,
     delete_clothing,
-    upload_clothing_image
 )
 
 
@@ -25,127 +24,82 @@ router = APIRouter()
 # CREATE CLOTHING
 # -------------------------
 
-@router.post("/clothing")
+@router.post(
+    "/clothing",
+    response_model=ClothingResponse,
+)
 def add_clothing(
     clothing: ClothingCreate,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
+    try:
+        new_clothing = create_clothing(
+            db=db,
+            user_id=current_user.id,
+            clothing=clothing,
+        )
+    except ValueError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=str(e),
+        )
 
-    new_clothing = create_clothing(
-
-        user_id=current_user.id,
-
-        name=clothing.name,
-
-        subcategory_id=clothing.subcategory_id,
-
-        color=clothing.color,
-
-        fit=clothing.fit,
-
-        material=clothing.material,
-
-        season=clothing.season,
-
-        style=clothing.style,
-
-        brand=clothing.brand,
-
-        silhouette=clothing.silhouette,
-
-        layering_role=clothing.layering_role,
-
-        warmth_level=clothing.warmth_level,
-
-        occasion=clothing.occasion,
-
-        image_url=clothing.image_url
-    )
-
-
-    return {
-        "message": "Clothing added successfully!",
-        "id": new_clothing.id,
-        "name": new_clothing.name
-    }
-
+    return new_clothing
 
 
 # -------------------------
 # GET MY CLOTHES
 # -------------------------
 
-@router.get("/clothing")
+@router.get(
+    "/clothing",
+    response_model=list[ClothingResponse],
+)
 def get_clothing(
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
-
-    clothes = get_user_clothing(
-        current_user.id
+    return get_user_clothing(
+        db=db,
+        user_id=current_user.id,
     )
-
-    return clothes
-
 
 
 # -------------------------
 # UPDATE CLOTHING
 # -------------------------
 
-@router.put("/clothing/{clothing_id}")
+@router.put(
+    "/clothing/{clothing_id}",
+    response_model=ClothingResponse,
+)
 def edit_clothing(
     clothing_id: int,
     clothing: ClothingUpdate,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
-
-    updated = update_clothing(
-
-        clothing_id=clothing_id,
-
-        user_id=current_user.id,
-
-        name=clothing.name,
-
-        subcategory_id=clothing.subcategory_id,
-
-        color=clothing.color,
-
-        fit=clothing.fit,
-
-        material=clothing.material,
-
-        season=clothing.season,
-
-        style=clothing.style,
-
-        brand=clothing.brand,
-
-        silhouette=clothing.silhouette,
-
-        layering_role=clothing.layering_role,
-
-        warmth_level=clothing.warmth_level,
-
-        occasion=clothing.occasion,
-
-        image_url=clothing.image_url
-    )
-
-
-    if not updated:
-
+    try:
+        updated = update_clothing(
+            db=db,
+            clothing_id=clothing_id,
+            user_id=current_user.id,
+            clothing_data=clothing,
+        )
+    except ValueError as e:
         raise HTTPException(
-            status_code=404,
-            detail="Clothing item not found."
+            status_code=400,
+            detail=str(e),
         )
 
+    if not updated:
+        raise HTTPException(
+            status_code=404,
+            detail="Clothing item not found.",
+        )
 
-    return {
-        "message": "Clothing updated successfully!",
-        "clothing": updated
-    }
-
+    return updated
 
 
 # -------------------------
@@ -155,67 +109,21 @@ def edit_clothing(
 @router.delete("/clothing/{clothing_id}")
 def remove_clothing(
     clothing_id: int,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
-
     deleted = delete_clothing(
-
+        db=db,
         clothing_id=clothing_id,
-
-        user_id=current_user.id
+        user_id=current_user.id,
     )
-
 
     if not deleted:
-
         raise HTTPException(
             status_code=404,
-            detail="Clothing item not found."
+            detail="Clothing item not found.",
         )
 
-
     return {
-        "message": "Clothing deleted successfully!"
-    }
-
-
-
-# -------------------------
-# UPLOAD IMAGE
-# -------------------------
-
-@router.post("/clothing/{clothing_id}/image")
-def upload_image(
-    clothing_id: int,
-
-    file: UploadFile = File(...),
-
-    current_user: User = Depends(get_current_user)
-):
-
-    clothing = upload_clothing_image(
-
-        clothing_id=clothing_id,
-
-        user_id=current_user.id,
-
-        file=file
-    )
-
-
-    if not clothing:
-
-        raise HTTPException(
-            status_code=404,
-            detail="Clothing item not found or invalid image."
-        )
-
-
-    return {
-
-        "message": "Image uploaded successfully!",
-
-        "image_url": clothing.image_url,
-
-        "clothing": clothing
+        "message": "Clothing deleted successfully!",
     }
