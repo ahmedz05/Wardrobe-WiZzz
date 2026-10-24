@@ -1,19 +1,26 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models.user import User
+
 from app.schemas.clothing_schema import (
     ClothingCreate,
     ClothingUpdate,
     ClothingResponse,
 )
+
 from app.services.auth_dependencies import get_current_user
+
 from app.services.clothing_service import (
     create_clothing,
     get_user_clothing,
     update_clothing,
     delete_clothing,
+)
+
+from app.services.wardrobe_matching_service import (
+    rank_wardrobe_color_matches,
 )
 
 
@@ -67,6 +74,46 @@ def get_clothing(
 
 
 # -------------------------
+# GET CLOTHING MATCHES
+# -------------------------
+
+@router.get(
+    "/clothing/{clothing_id}/matches"
+)
+def get_clothing_matches(
+    clothing_id: int,
+    limit: int = Query(
+        default=10,
+        ge=1,
+        le=50,
+    ),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    try:
+        return rank_wardrobe_color_matches(
+            db=db,
+            user_id=current_user.id,
+            clothing_id=clothing_id,
+            limit=limit,
+        )
+
+    except ValueError as exc:
+        message = str(exc)
+
+        if message == "Clothing item not found.":
+            raise HTTPException(
+                status_code=404,
+                detail=message,
+            )
+
+        raise HTTPException(
+            status_code=400,
+            detail=message,
+        )
+
+
+# -------------------------
 # UPDATE CLOTHING
 # -------------------------
 
@@ -106,7 +153,9 @@ def edit_clothing(
 # DELETE CLOTHING
 # -------------------------
 
-@router.delete("/clothing/{clothing_id}")
+@router.delete(
+    "/clothing/{clothing_id}"
+)
 def remove_clothing(
     clothing_id: int,
     current_user: User = Depends(get_current_user),

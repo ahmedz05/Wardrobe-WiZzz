@@ -16,6 +16,7 @@ from app.routes.category_routes import router as category_router
 from app.routes.brand_routes import router as brand_router
 from app.routes.material_routes import router as material_router
 from app.routes.color_routes import router as color_router
+from app.routes.outfit_routes import router as outfit_router
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -38,7 +39,9 @@ app = FastAPI(
 
 app.mount(
     "/uploads",
-    StaticFiles(directory=str(UPLOAD_FOLDER)),
+    StaticFiles(
+        directory=str(UPLOAD_FOLDER)
+    ),
     name="uploads",
 )
 
@@ -50,6 +53,7 @@ app.include_router(category_router)
 app.include_router(brand_router)
 app.include_router(material_router)
 app.include_router(color_router)
+app.include_router(outfit_router)
 
 
 @app.get("/")
