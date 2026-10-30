@@ -14,8 +14,48 @@ from app.services.garment_matching_service import (
     evaluate_garment_pair,
 )
 
+from app.services.style_matching_service import (
+    evaluate_style_and_occasion,
+)
+
+from app.services.season_matching_service import (
+    evaluate_season_and_warmth,
+)
+
+from app.services.weather_matching_service import (
+    evaluate_item_weather,
+)
+
 
 OUTFIT_COMPATIBILITY_THRESHOLD = 70
+
+
+# -------------------------
+# PAIR SCORING WEIGHTS
+# -------------------------
+
+COLOR_WEIGHT = 0.25
+GARMENT_WEIGHT = 0.25
+STYLE_WEIGHT = 0.20
+OCCASION_WEIGHT = 0.10
+SEASON_WEIGHT = 0.10
+WARMTH_WEIGHT = 0.10
+
+
+# -------------------------
+# FINAL OUTFIT WEIGHTS
+# -------------------------
+
+FASHION_SCORE_WEIGHT = 0.80
+WEATHER_SCORE_WEIGHT = 0.20
+
+
+WEATHER_BODY_CATEGORIES = {
+    "Tops",
+    "Bottoms",
+    "Dresses & One Pieces",
+    "Outerwear",
+}
 
 
 def _get_category_name(
@@ -64,6 +104,106 @@ def _build_item_info(
         "style": item.style,
         "occasion": item.occasion,
         "fit": item.fit,
+        "silhouette": item.silhouette,
+        "layering_role": item.layering_role,
+        "season": item.season,
+        "warmth_level": item.warmth_level,
+    }
+
+
+def _calculate_dynamic_score(
+    color_score: int,
+    garment_score: int,
+    style_score: int | None,
+    occasion_score: int | None,
+    season_score: int | None,
+    warmth_score: int | None,
+) -> dict:
+    """
+    Calculate the pair compatibility score.
+
+    Missing optional metadata does not reduce
+    the score. Missing weight is redistributed
+    over the dimensions that are available.
+    """
+
+    dimensions = [
+        {
+            "name": "color",
+            "score": color_score,
+            "weight": COLOR_WEIGHT,
+        },
+        {
+            "name": "garment",
+            "score": garment_score,
+            "weight": GARMENT_WEIGHT,
+        },
+    ]
+
+    if style_score is not None:
+        dimensions.append(
+            {
+                "name": "style",
+                "score": style_score,
+                "weight": STYLE_WEIGHT,
+            }
+        )
+
+    if occasion_score is not None:
+        dimensions.append(
+            {
+                "name": "occasion",
+                "score": occasion_score,
+                "weight": OCCASION_WEIGHT,
+            }
+        )
+
+    if season_score is not None:
+        dimensions.append(
+            {
+                "name": "season",
+                "score": season_score,
+                "weight": SEASON_WEIGHT,
+            }
+        )
+
+    if warmth_score is not None:
+        dimensions.append(
+            {
+                "name": "warmth",
+                "score": warmth_score,
+                "weight": WARMTH_WEIGHT,
+            }
+        )
+
+    total_weight = sum(
+        dimension["weight"]
+        for dimension in dimensions
+    )
+
+    weighted_total = sum(
+        dimension["score"]
+        * dimension["weight"]
+        for dimension in dimensions
+    )
+
+    final_score = round(
+        weighted_total
+        / total_weight
+    )
+
+    normalized_weights = {
+        dimension["name"]: round(
+            dimension["weight"]
+            / total_weight,
+            3,
+        )
+        for dimension in dimensions
+    }
+
+    return {
+        "score": final_score,
+        "weights_used": normalized_weights,
     }
 
 
@@ -71,11 +211,6 @@ def _evaluate_item_pair(
     first_item: Clothing,
     second_item: Clothing,
 ) -> dict:
-    """
-    Combine color compatibility and garment-role
-    compatibility for two clothing items.
-    """
-
     color_result = evaluate_color_pair(
         first_item.color,
         second_item.color,
@@ -86,13 +221,60 @@ def _evaluate_item_pair(
         second_item,
     )
 
-    combined_score = round(
-        (
-            color_result["score"]
-            + garment_result["score"]
+    style_context = (
+        evaluate_style_and_occasion(
+            first_item,
+            second_item,
         )
-        / 2
     )
+
+    style_result = style_context[
+        "style"
+    ]
+
+    occasion_result = style_context[
+        "occasion"
+    ]
+
+    seasonal_context = (
+        evaluate_season_and_warmth(
+            first_item,
+            second_item,
+        )
+    )
+
+    season_result = seasonal_context[
+        "season"
+    ]
+
+    warmth_result = seasonal_context[
+        "warmth"
+    ]
+
+    scoring = _calculate_dynamic_score(
+        color_score=color_result[
+            "score"
+        ],
+        garment_score=garment_result[
+            "score"
+        ],
+        style_score=style_result[
+            "score"
+        ],
+        occasion_score=occasion_result[
+            "score"
+        ],
+        season_score=season_result[
+            "score"
+        ],
+        warmth_score=warmth_result[
+            "score"
+        ],
+    )
+
+    combined_score = scoring[
+        "score"
+    ]
 
     compatible = (
         garment_result["compatible"]
@@ -105,35 +287,139 @@ def _evaluate_item_pair(
             "id": first_item.id,
             "name": first_item.name,
         },
+
         "item_2": {
             "id": second_item.id,
             "name": second_item.name,
         },
+
         "score": combined_score,
+
         "compatible": compatible,
-        "color_score": color_result[
-            "score"
+
+        "weights_used": scoring[
+            "weights_used"
         ],
-        "color_harmony": color_result[
-            "harmony"
-        ],
-        "garment_score": garment_result[
-            "score"
-        ],
-        "garment_relation": garment_result[
-            "relation"
-        ],
+
+        "color_match": {
+            "score": color_result[
+                "score"
+            ],
+            "compatible": color_result[
+                "compatible"
+            ],
+            "harmony": color_result[
+                "harmony"
+            ],
+            "reasons": color_result[
+                "reasons"
+            ],
+        },
+
+        "garment_match": {
+            "score": garment_result[
+                "score"
+            ],
+            "compatible": garment_result[
+                "compatible"
+            ],
+            "relation": garment_result[
+                "relation"
+            ],
+            "reasons": garment_result[
+                "reasons"
+            ],
+        },
+
+        "style_match": {
+            "score": style_result[
+                "score"
+            ],
+            "compatible": style_result[
+                "compatible"
+            ],
+            "relation": style_result[
+                "relation"
+            ],
+            "style_1": style_result[
+                "style_1"
+            ],
+            "style_2": style_result[
+                "style_2"
+            ],
+            "reasons": style_result[
+                "reasons"
+            ],
+        },
+
+        "occasion_match": {
+            "score": occasion_result[
+                "score"
+            ],
+            "compatible": occasion_result[
+                "compatible"
+            ],
+            "relation": occasion_result[
+                "relation"
+            ],
+            "occasion_1": occasion_result[
+                "occasion_1"
+            ],
+            "occasion_2": occasion_result[
+                "occasion_2"
+            ],
+            "reasons": occasion_result[
+                "reasons"
+            ],
+        },
+
+        "season_match": {
+            "score": season_result[
+                "score"
+            ],
+            "compatible": season_result[
+                "compatible"
+            ],
+            "relation": season_result[
+                "relation"
+            ],
+            "season_1": season_result[
+                "season_1"
+            ],
+            "season_2": season_result[
+                "season_2"
+            ],
+            "reasons": season_result[
+                "reasons"
+            ],
+        },
+
+        "warmth_match": {
+            "score": warmth_result[
+                "score"
+            ],
+            "compatible": warmth_result[
+                "compatible"
+            ],
+            "relation": warmth_result[
+                "relation"
+            ],
+            "warmth_1": warmth_result[
+                "warmth_1"
+            ],
+            "warmth_2": warmth_result[
+                "warmth_2"
+            ],
+            "reasons": warmth_result[
+                "reasons"
+            ],
+        },
     }
 
 
 def _score_outfit(
     items: list[Clothing],
 ) -> dict:
-    """
-    Score a complete outfit by evaluating
-    every pair of pieces inside it.
-    """
-
     pair_results = []
 
     for first_item, second_item in combinations(
@@ -166,11 +452,10 @@ def _score_outfit(
         / len(pair_results)
     )
 
-    # Garment-role conflicts should stop an
-    # outfit from being recommended even when
-    # its colors happen to work well.
     garment_roles_valid = all(
-        result["compatible"]
+        result["garment_match"][
+            "compatible"
+        ]
         for result in pair_results
     )
 
@@ -187,14 +472,103 @@ def _score_outfit(
     }
 
 
+def _evaluate_outfit_weather(
+    items: list[Clothing],
+    temperature_c: float | None,
+    condition: str | None,
+) -> dict:
+    """
+    Evaluate the complete outfit against
+    external weather conditions.
+
+    Shoes, accessories and bags are excluded
+    from thermal scoring for now because their
+    warmth metadata should not determine the
+    body's overall temperature suitability.
+    """
+
+    if temperature_c is None:
+        return {
+            "score": None,
+            "items_evaluated": 0,
+            "analysis": [],
+        }
+
+    weather_items = [
+        item
+        for item in items
+        if _get_category_name(item)
+        in WEATHER_BODY_CATEGORIES
+    ]
+
+    analysis = []
+
+    valid_scores = []
+
+    for item in weather_items:
+        result = evaluate_item_weather(
+            item=item,
+            temperature_c=temperature_c,
+            condition=condition,
+        )
+
+        analysis.append(
+            {
+                "item": {
+                    "id": item.id,
+                    "name": item.name,
+                },
+                "weather_match": result,
+            }
+        )
+
+        if result["score"] is not None:
+            valid_scores.append(
+                result["score"]
+            )
+
+    if not valid_scores:
+        weather_score = None
+
+    else:
+        weather_score = round(
+            sum(valid_scores)
+            / len(valid_scores)
+        )
+
+    return {
+        "score": weather_score,
+        "items_evaluated": len(
+            weather_items
+        ),
+        "analysis": analysis,
+    }
+
+
+def _combine_fashion_and_weather(
+    fashion_score: int,
+    weather_score: int | None,
+) -> int:
+    """
+    Weather adjusts ranking but does not replace
+    the core fashion intelligence score.
+    """
+
+    if weather_score is None:
+        return fashion_score
+
+    return round(
+        fashion_score
+        * FASHION_SCORE_WEIGHT
+        +
+        weather_score
+        * WEATHER_SCORE_WEIGHT
+    )
+
+
 def _is_layer_candidate(
     item: Clothing,
 ) -> bool:
-    """
-    Return True when an item can reasonably
-    function as an additional layer.
-    """
-
     category = _get_category_name(
         item
     )
@@ -215,34 +589,127 @@ def _is_layer_candidate(
     return False
 
 
+def _build_outfit_result(
+    top: Clothing,
+    bottom: Clothing,
+    shoe: Clothing,
+    layer: Clothing | None,
+    outfit_result: dict,
+    temperature_c: float | None,
+    condition: str | None,
+) -> dict:
+    items = [
+        top,
+        bottom,
+        shoe,
+    ]
+
+    if layer is not None:
+        items.append(
+            layer
+        )
+
+    weather_result = (
+        _evaluate_outfit_weather(
+            items=items,
+            temperature_c=temperature_c,
+            condition=condition,
+        )
+    )
+
+    final_score = (
+        _combine_fashion_and_weather(
+            fashion_score=outfit_result[
+                "score"
+            ],
+            weather_score=weather_result[
+                "score"
+            ],
+        )
+    )
+
+    return {
+        "score": final_score,
+
+        "compatibility_score": outfit_result[
+            "score"
+        ],
+
+        "weather_score": weather_result[
+            "score"
+        ],
+
+        "has_layer": layer is not None,
+
+        "items": {
+            "top": _build_item_info(
+                top
+            ),
+
+            "bottom": _build_item_info(
+                bottom
+            ),
+
+            "shoes": _build_item_info(
+                shoe
+            ),
+
+            "layer": (
+                _build_item_info(
+                    layer
+                )
+                if layer is not None
+                else None
+            ),
+        },
+
+        "pair_analysis": outfit_result[
+            "pair_analysis"
+        ],
+
+        "weather_analysis": weather_result[
+            "analysis"
+        ],
+    }
+
+
 def generate_outfits(
     db: Session,
     user_id: int,
     limit: int = 5,
     include_layers: bool = True,
+    temperature_c: float | None = None,
+    condition: str | None = None,
 ) -> dict:
     """
     Generate ranked outfits from a user's wardrobe.
 
-    V1 outfit structure:
+    V2.2 considers:
 
-        Top
-        Bottom
-        Shoes
-        Optional Layer
+        Color
+        Garment roles
+        Style
+        Occasion
+        Season
+        Garment warmth
+        External weather context
 
-    Future versions can add:
-        dresses
-        accessories
-        bags
-        weather
-        occasion
-        personal style
-        fit
-        silhouette
-        history
-        user feedback
+    Weather is optional.
+
+    If weather is supplied, the final ranking is:
+
+        80% fashion compatibility
+        20% weather suitability
     """
+
+    if (
+        condition is not None
+        and temperature_c is None
+    ):
+        raise ValueError(
+            "temperature_c is required when "
+            "a weather condition is provided."
+        )
 
     wardrobe = (
         db.query(Clothing)
@@ -319,7 +786,9 @@ def generate_outfits(
     generated_outfits = []
 
     for top in tops:
+
         for bottom in bottoms:
+
             for shoe in shoes:
 
                 core_items = [
@@ -332,31 +801,19 @@ def generate_outfits(
                     core_items
                 )
 
-                if core_result["compatible"]:
+                if core_result[
+                    "compatible"
+                ]:
                     generated_outfits.append(
-                        {
-                            "score": core_result[
-                                "score"
-                            ],
-                            "has_layer": False,
-                            "items": {
-                                "top": _build_item_info(
-                                    top
-                                ),
-                                "bottom": _build_item_info(
-                                    bottom
-                                ),
-                                "shoes": _build_item_info(
-                                    shoe
-                                ),
-                                "layer": None,
-                            },
-                            "pair_analysis": (
-                                core_result[
-                                    "pair_analysis"
-                                ]
-                            ),
-                        }
+                        _build_outfit_result(
+                            top=top,
+                            bottom=bottom,
+                            shoe=shoe,
+                            layer=None,
+                            outfit_result=core_result,
+                            temperature_c=temperature_c,
+                            condition=condition,
+                        )
                     )
 
                 if not include_layers:
@@ -386,31 +843,15 @@ def generate_outfits(
                         continue
 
                     generated_outfits.append(
-                        {
-                            "score": layered_result[
-                                "score"
-                            ],
-                            "has_layer": True,
-                            "items": {
-                                "top": _build_item_info(
-                                    top
-                                ),
-                                "bottom": _build_item_info(
-                                    bottom
-                                ),
-                                "shoes": _build_item_info(
-                                    shoe
-                                ),
-                                "layer": _build_item_info(
-                                    layer
-                                ),
-                            },
-                            "pair_analysis": (
-                                layered_result[
-                                    "pair_analysis"
-                                ]
-                            ),
-                        }
+                        _build_outfit_result(
+                            top=top,
+                            bottom=bottom,
+                            shoe=shoe,
+                            layer=layer,
+                            outfit_result=layered_result,
+                            temperature_c=temperature_c,
+                            condition=condition,
+                        )
                     )
 
     generated_outfits.sort(
@@ -424,9 +865,39 @@ def generate_outfits(
         "wardrobe_items_considered": len(
             usable_items
         ),
+
         "outfits_generated": len(
             generated_outfits
         ),
+
+        "scoring_version": "2.2",
+
+        "pair_scoring_dimensions": {
+            "color": COLOR_WEIGHT,
+            "garment_role": GARMENT_WEIGHT,
+            "style": STYLE_WEIGHT,
+            "occasion": OCCASION_WEIGHT,
+            "season": SEASON_WEIGHT,
+            "warmth": WARMTH_WEIGHT,
+        },
+
+        "final_ranking_dimensions": {
+            "fashion_compatibility": (
+                FASHION_SCORE_WEIGHT
+            ),
+            "weather_suitability": (
+                WEATHER_SCORE_WEIGHT
+            ),
+        },
+
+        "weather_context": {
+            "enabled": (
+                temperature_c is not None
+            ),
+            "temperature_c": temperature_c,
+            "condition": condition,
+        },
+
         "outfits": generated_outfits[
             :limit
         ],

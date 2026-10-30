@@ -183,5 +183,22 @@ class CatalogAuthorizationTests(unittest.TestCase):
         self.assertEqual(self.client.delete(path, headers=self.auth).status_code, 200)
         self.assertEqual(len(self.client.get("/clothing", headers=self.auth).json()), 3)
 
+    def test_catalog_denial_preserves_weather_outfits_and_user_isolation(self):
+        self.assert_mutations_denied(self.auth, 403)
+        results = []
+        for params in ({}, {"temperature_c": 5, "condition": "Rain"},
+                       {"temperature_c": 35, "condition": "Clear", "include_layers": "false"}):
+            response = self.client.get("/outfits/generate", params=params, headers=self.auth)
+            self.assertEqual(response.status_code, 200)
+            self.assertTrue(response.json()["outfits"])
+            results.append(response.json())
+        self.assertFalse(results[0]["weather_context"]["enabled"])
+        self.assertTrue(results[1]["weather_context"]["enabled"])
+        self.assertNotEqual(results[1]["outfits"][0]["weather_score"], results[2]["outfits"][0]["weather_score"])
+        self.assertTrue(all(outfit["items"].get("layer") is None for outfit in results[2]["outfits"]))
+        self.assertEqual(self.client.get("/outfits/generate", headers=self.other_auth).status_code, 400)
+        self.assertEqual(self.client.get("/outfits/generate").status_code, 401)
+
+
 if __name__ == "__main__":
     unittest.main()
