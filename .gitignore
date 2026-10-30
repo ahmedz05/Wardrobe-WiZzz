@@ -27,6 +27,14 @@ build/
 .env.*
 !.env.example
 
+# Private keys and signing material; review exceptions before tracking certificates.
+*.key
+*.pem
+*.p12
+*.pfx
+*.jks
+*.keystore
+
 
 # =========================
 # Databases
@@ -35,6 +43,18 @@ build/
 *.db
 *.sqlite
 *.sqlite3
+
+# Keep database exports local without hiding reviewed SQL source or migrations.
+/backups/
+/backend/backups/
+/database/backups/
+*.dump
+*.pgdump
+*.backup
+*.sql.gz
+*.sql.bz2
+*.sql.xz
+*.dump.gz
 
 
 # =========================
@@ -96,3 +116,19 @@ ai/models/
 
 .DS_Store
 Thumbs.db
+
+# Workspace-local development SDKs and package caches
+.tools/
+node_modules/
+.taste-skill/
+
+# Publication hold: research redistribution rights are not established.
+/wardrobe_wizzz_fashion_research_bundle/
+
+# Publication hold: unused local scaffolding, pending a separate code review.
+/backend/app/common/
+
+# Publication hold: write runners/bootstrap lack approved pre-write isolation.
+/tools/integration_database.py
+/tools/check_integration.py
+/tools/browser/verify_integration.mjs
