@@ -2,7 +2,7 @@ from fastapi import Depends, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 
-from app.database import SessionLocal
+from app.database import get_db
 from app.models.user import User
 from app.services.auth_service import verify_token
 
@@ -11,7 +11,8 @@ oauth2_scheme = HTTPBearer()
 
 
 def get_current_user(
-    token: HTTPAuthorizationCredentials = Depends(oauth2_scheme)
+    token: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
+    db: Session = Depends(get_db),
 ):
     # Extract raw token string
     jwt_token = token.credentials
@@ -19,19 +20,15 @@ def get_current_user(
     # Decode JWT
     payload = verify_token(jwt_token)
 
-    if not payload:
+    user_id = payload.get("user_id") if payload else None
+    if not isinstance(user_id, int) or isinstance(user_id, bool):
         raise HTTPException(
             status_code=401,
             detail="Invalid token"
         )
 
-    # Connect to DB
-    db: Session = SessionLocal()
-
     # Find user from token payload
-    user = db.query(User).filter(User.id == payload["user_id"]).first()
-
-    db.close()
+    user = db.query(User).filter(User.id == user_id, User.is_active.is_(True)).first()
 
     if not user:
         raise HTTPException(

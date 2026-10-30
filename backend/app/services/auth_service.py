@@ -1,7 +1,8 @@
-from datetime import datetime, timedelta
+import os
+from datetime import datetime, timedelta, timezone
 from jose import jwt, JWTError
 
-SECRET_KEY = "wardrobe-wizzz-secret-key"
+SECRET_KEY = os.environ["JWT_SECRET_KEY"]
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
@@ -9,7 +10,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 60
 def create_access_token(data: dict):
     to_encode = data.copy()
 
-    expire = datetime.utcnow() + timedelta(
+    expire = datetime.now(timezone.utc) + timedelta(
         minutes=ACCESS_TOKEN_EXPIRE_MINUTES
     )
 

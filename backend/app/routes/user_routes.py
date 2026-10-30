@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from sqlalchemy.orm import Session
 
-from app.database import SessionLocal
+from app.database import get_db
 from app.models.user import User
 from app.schemas.user_schema import UserCreate, UserLogin
 from app.services.user_service import create_user, verify_password
@@ -17,13 +17,17 @@ router = APIRouter()
 # REGISTER
 # -----------------------
 @router.post("/register")
-def register(user: UserCreate):
+def register(user: UserCreate, db: Session = Depends(get_db)):
 
-    new_user = create_user(
-        username=user.username,
-        email=user.email,
-        password=user.password
-    )
+    try:
+        new_user = create_user(
+            username=user.username,
+            email=user.email,
+            password=user.password,
+            db=db,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
 
     return {
         "id": new_user.id,
@@ -36,9 +40,7 @@ def register(user: UserCreate):
 # LOGIN
 # -----------------------
 @router.post("/login")
-def login(user: UserLogin):
-
-    db: Session = SessionLocal()
+def login(user: UserLogin, db: Session = Depends(get_db)):
 
     db_user = db.query(User).filter(User.email == user.email).first()
 

@@ -28,7 +28,6 @@ UPLOAD_FOLDER.mkdir(
 )
 
 
-Base.metadata.create_all(bind=engine)
 
 
 app = FastAPI(
