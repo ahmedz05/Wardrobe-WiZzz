@@ -1,7 +1,4 @@
-from pathlib import Path
-
 from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
 
 from app.database import Base, engine
 
@@ -19,30 +16,14 @@ from app.routes.color_routes import router as color_router
 from app.routes.outfit_routes import router as outfit_router
 
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-UPLOAD_FOLDER = BASE_DIR / "uploads"
-
-UPLOAD_FOLDER.mkdir(
-    parents=True,
-    exist_ok=True,
-)
-
-
-
-
 app = FastAPI(
     title="Wardrobe-WIZzz API",
     version="1.0.0",
 )
 
 
-app.mount(
-    "/uploads",
-    StaticFiles(
-        directory=str(UPLOAD_FOLDER)
-    ),
-    name="uploads",
-)
+# Legacy uploads have no trustworthy ownership metadata. Keep existing files on
+# disk, but never expose the directory through a public static-files mount.
 
 
 app.include_router(user_router)

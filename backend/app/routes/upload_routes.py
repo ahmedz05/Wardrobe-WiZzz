@@ -1,6 +1,4 @@
-from fastapi import APIRouter, UploadFile, File
-
-from app.services.upload_service import save_image
+from fastapi import APIRouter, HTTPException
 
 router = APIRouter(
     prefix="/upload",
@@ -8,11 +6,15 @@ router = APIRouter(
 )
 
 
-@router.post("/")
-def upload_image(file: UploadFile = File(...)):
-    image_url = save_image(file)
+@router.post("/", status_code=503)
+async def upload_image() -> None:
+    """Fail closed until uploads have validated content and trusted ownership.
 
-    return {
-        "message": "Image uploaded successfully.",
-        "image_url": image_url
-    }
+    Do not declare File/UploadFile dependencies here: multipart parsing and disk
+    spooling would happen before this rejection. Existing files are left intact.
+    """
+    raise HTTPException(
+        status_code=503,
+        detail="Wardrobe image uploads are temporarily unavailable.",
+        headers={"Cache-Control": "no-store"},
+    )
