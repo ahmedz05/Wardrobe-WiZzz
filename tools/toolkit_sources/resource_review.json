@@ -1,0 +1,122 @@
+{
+  "reviewed_on": "2026-10-30",
+  "scope": "tooling only",
+  "metadata": [
+    {
+      "requested": "obra/superpowers",
+      "canonical": "obra/superpowers",
+      "branch": "main",
+      "archived": false,
+      "pushed_at": "2026-10-29T23:35:34Z",
+      "license": "MIT",
+      "url": "https://github.com/obra/superpowers"
+    },
+    {
+      "requested": "upstash/context7",
+      "canonical": "upstash/context7",
+      "branch": "master",
+      "archived": false,
+      "pushed_at": "2026-10-29T18:26:04Z",
+      "license": "MIT",
+      "url": "https://github.com/upstash/context7"
+    },
+    {
+      "requested": "microsoft/playwright-mcp",
+      "canonical": "microsoft/playwright-mcp",
+      "branch": "main",
+      "archived": false,
+      "pushed_at": "2026-10-22T17:43:26Z",
+      "license": "Apache-2.0",
+      "url": "https://github.com/microsoft/playwright-mcp"
+    },
+    {
+      "requested": "github/github-mcp-server",
+      "canonical": "github/github-mcp-server",
+      "branch": "main",
+      "archived": false,
+      "pushed_at": "2026-10-29T16:28:19Z",
+      "license": "MIT",
+      "url": "https://github.com/github/github-mcp-server"
+    },
+    {
+      "requested": "affaan-m/ECC",
+      "canonical": "affaan-m/ECC",
+      "branch": "main",
+      "archived": false,
+      "pushed_at": "2026-10-30T00:45:12Z",
+      "license": "MIT",
+      "url": "https://github.com/affaan-m/ECC"
+    },
+    {
+      "requested": "anthropics/skills",
+      "canonical": "anthropics/skills",
+      "branch": "main",
+      "archived": false,
+      "pushed_at": "2026-10-28T19:20:39Z",
+      "url": "https://github.com/anthropics/skills"
+    },
+    {
+      "requested": "anthropics/claude-code-action",
+      "canonical": "anthropics/claude-code-action",
+      "branch": "main",
+      "archived": false,
+      "pushed_at": "2026-10-30T01:10:18Z",
+      "license": "MIT",
+      "url": "https://github.com/anthropics/claude-code-action"
+    },
+    {
+      "requested": "hesreallyhim/awesome-claude-code",
+      "canonical": "hesreallyhim/awesome-claude-code",
+      "branch": "main",
+      "archived": false,
+      "pushed_at": "2026-10-30T00:20:19Z",
+      "license": "NOASSERTION",
+      "url": "https://github.com/hesreallyhim/awesome-claude-code"
+    },
+    {
+      "requested": "wshobson/agents",
+      "canonical": "wshobson/agents",
+      "branch": "main",
+      "archived": false,
+      "pushed_at": "2026-10-26T01:08:14Z",
+      "license": "MIT",
+      "url": "https://github.com/wshobson/agents"
+    },
+    {
+      "requested": "ccusage/ccusage",
+      "canonical": "ccusage/ccusage",
+      "branch": "main",
+      "archived": false,
+      "pushed_at": "2026-10-30T01:15:01Z",
+      "license": "NOASSERTION",
+      "url": "https://github.com/ccusage/ccusage"
+    },
+    {
+      "requested": "vercel-labs/skills",
+      "canonical": "vercel-labs/skills",
+      "branch": "main",
+      "archived": false,
+      "pushed_at": "2026-10-29T00:49:36Z",
+      "license": "MIT",
+      "url": "https://github.com/vercel-labs/skills"
+    },
+    {
+      "requested": "coreyhaines31/marketingskills",
+      "canonical": "coreyhaines31/marketingskills",
+      "branch": "main",
+      "archived": false,
+      "pushed_at": "2026-10-29T17:22:37Z",
+      "license": "MIT",
+      "url": "https://github.com/coreyhaines31/marketingskills"
+    },
+    {
+      "requested": "Leonxlnx/taste-skill",
+      "canonical": "Leonxlnx/taste-skill",
+      "branch": "main",
+      "archived": false,
+      "pushed_at": "2026-10-29T17:14:24Z",
+      "license": "MIT",
+      "url": "https://github.com/Leonxlnx/taste-skill"
+    }
+  ]
+}
