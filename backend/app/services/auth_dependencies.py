@@ -1,3 +1,5 @@
+from typing import NoReturn
+
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
@@ -37,3 +39,14 @@ def get_current_user(
         )
 
     return user
+
+
+def require_catalog_write_access(
+    current_user: User = Depends(get_current_user),
+) -> NoReturn:
+    """Authenticate first, then deny writes until catalog privileges are defined.
+
+    No account or token claim can bypass this temporary policy. Keep this
+    dependency on mutation operations only so public catalog reads stay public.
+    """
+    raise HTTPException(status_code=403, detail="Shared catalog mutations are disabled.")
