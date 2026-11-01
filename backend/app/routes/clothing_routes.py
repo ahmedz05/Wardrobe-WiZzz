@@ -1,4 +1,6 @@
+
 from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -27,9 +29,18 @@ from app.services.wardrobe_matching_service import (
 router = APIRouter()
 
 
-# -------------------------
+# =====================================
+# DATABASE CONSTRAINT ERROR MESSAGE
+# =====================================
+
+CONSTRAINT_ERROR_MESSAGE = (
+    "Clothing data violates database constraints."
+)
+
+
+# =====================================
 # CREATE CLOTHING
-# -------------------------
+# =====================================
 
 @router.post(
     "/clothing",
@@ -46,18 +57,28 @@ def add_clothing(
             user_id=current_user.id,
             clothing=clothing,
         )
-    except ValueError as e:
+
+    except ValueError as exc:
+        # Business validation error.
         raise HTTPException(
             status_code=400,
-            detail=str(e),
-        )
+            detail=str(exc),
+        ) from exc
+
+    except IntegrityError as exc:
+        # Database constraint violation.
+        # Do not expose SQL statements or database details.
+        raise HTTPException(
+            status_code=409,
+            detail=CONSTRAINT_ERROR_MESSAGE,
+        ) from exc
 
     return new_clothing
 
 
-# -------------------------
-# GET MY CLOTHES
-# -------------------------
+# =====================================
+# GET MY CLOTHING
+# =====================================
 
 @router.get(
     "/clothing",
@@ -73,12 +94,12 @@ def get_clothing(
     )
 
 
-# -------------------------
+# =====================================
 # GET CLOTHING MATCHES
-# -------------------------
+# =====================================
 
 @router.get(
-    "/clothing/{clothing_id}/matches"
+    "/clothing/{clothing_id}/matches",
 )
 def get_clothing_matches(
     clothing_id: int,
@@ -105,17 +126,17 @@ def get_clothing_matches(
             raise HTTPException(
                 status_code=404,
                 detail=message,
-            )
+            ) from exc
 
         raise HTTPException(
             status_code=400,
             detail=message,
-        )
+        ) from exc
 
 
-# -------------------------
+# =====================================
 # UPDATE CLOTHING
-# -------------------------
+# =====================================
 
 @router.put(
     "/clothing/{clothing_id}",
@@ -134,11 +155,21 @@ def edit_clothing(
             user_id=current_user.id,
             clothing_data=clothing,
         )
-    except ValueError as e:
+
+    except ValueError as exc:
+        # Invalid clothing data or catalog selection.
         raise HTTPException(
             status_code=400,
-            detail=str(e),
-        )
+            detail=str(exc),
+        ) from exc
+
+    except IntegrityError as exc:
+        # Constraint violation during update.
+        # Never return raw database error messages.
+        raise HTTPException(
+            status_code=409,
+            detail=CONSTRAINT_ERROR_MESSAGE,
+        ) from exc
 
     if not updated:
         raise HTTPException(
@@ -149,23 +180,31 @@ def edit_clothing(
     return updated
 
 
-# -------------------------
+# =====================================
 # DELETE CLOTHING
-# -------------------------
+# =====================================
 
 @router.delete(
-    "/clothing/{clothing_id}"
+    "/clothing/{clothing_id}",
 )
 def remove_clothing(
     clothing_id: int,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    deleted = delete_clothing(
-        db=db,
-        clothing_id=clothing_id,
-        user_id=current_user.id,
-    )
+    try:
+        deleted = delete_clothing(
+            db=db,
+            clothing_id=clothing_id,
+            user_id=current_user.id,
+        )
+
+    except IntegrityError as exc:
+        # A database constraint prevented deletion.
+        raise HTTPException(
+            status_code=409,
+            detail=CONSTRAINT_ERROR_MESSAGE,
+        ) from exc
 
     if not deleted:
         raise HTTPException(
