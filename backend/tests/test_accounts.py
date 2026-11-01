@@ -33,7 +33,7 @@ from app.services import auth_dependencies, user_service
 class AccountTests(unittest.TestCase):
 
     def setUp(self):
-        # Create a fresh in-memory SQLite database for each test.
+        # Create a new in-memory database for each test.
         self.engine = create_engine(
             "sqlite://",
             connect_args={"check_same_thread": False},
@@ -238,12 +238,9 @@ class AccountTests(unittest.TestCase):
 
         self.assertEqual(registered.status_code, 200)
 
-        user_id = registered.json()["id"]
-
-        # Valid signature but no expiration claim.
         token = jwt.encode(
             {
-                "user_id": user_id
+                "user_id": registered.json()["id"]
             },
             auth_service.SECRET_KEY,
             algorithm=auth_service.ALGORITHM
@@ -270,12 +267,9 @@ class AccountTests(unittest.TestCase):
 
         self.assertEqual(registered.status_code, 200)
 
-        user_id = registered.json()["id"]
-
-        # A malformed expiration value must not crash FastAPI.
         token = jwt.encode(
             {
-                "user_id": user_id,
+                "user_id": registered.json()["id"],
                 "exp": None
             },
             auth_service.SECRET_KEY,
@@ -290,6 +284,109 @@ class AccountTests(unittest.TestCase):
         )
 
         self.assertEqual(response.status_code, 401)
+
+    # =====================================
+    # TEST 8: INACTIVE USER CANNOT LOG IN
+    # =====================================
+
+    def test_inactive_user_cannot_log_in(self):
+        # Register an initially active account.
+        registered = self.client.post(
+            "/register",
+            json=self.account
+        )
+
+        self.assertEqual(registered.status_code, 200)
+        user_id = registered.json()["id"]
+
+        # Deactivate the account in our TEST database.
+        with Session(self.engine) as session:
+            db_user = session.query(User).filter(
+                User.id == user_id
+            ).one()
+
+            db_user.is_active = False
+            session.commit()
+
+        # Attempt login with the CORRECT password.
+        response = self.client.post(
+            "/login",
+            json={
+                "email": self.account["email"],
+                "password": self.account["password"]
+            }
+        )
+
+        # Inactive accounts must not receive tokens.
+        self.assertEqual(response.status_code, 401)
+
+        self.assertEqual(
+            response.json()["detail"],
+            "Invalid email or password"
+        )
+
+        self.assertNotIn(
+            "access_token",
+            response.json()
+        )
+
+        self.assertEqual(len(self.open_sessions), 0)
+
+    # =====================================
+    # TEST 9: DEACTIVATION INVALIDATES ACCESS
+    # =====================================
+
+    def test_existing_token_rejected_after_deactivation(self):
+        # Register the account.
+        registered = self.client.post(
+            "/register",
+            json=self.account
+        )
+
+        self.assertEqual(registered.status_code, 200)
+        user_id = registered.json()["id"]
+
+        # Login while the account is active.
+        logged_in = self.client.post(
+            "/login",
+            json={
+                "email": self.account["email"],
+                "password": self.account["password"]
+            }
+        )
+
+        self.assertEqual(logged_in.status_code, 200)
+
+        token = logged_in.json()["access_token"]
+
+        # Verify the token works before deactivation.
+        active_response = self.client.get(
+            "/me",
+            headers={
+                "Authorization": f"Bearer {token}"
+            }
+        )
+
+        self.assertEqual(active_response.status_code, 200)
+
+        # Deactivate the account in our TEST database.
+        with Session(self.engine) as session:
+            db_user = session.query(User).filter(
+                User.id == user_id
+            ).one()
+
+            db_user.is_active = False
+            session.commit()
+
+        # The SAME token must now be rejected.
+        inactive_response = self.client.get(
+            "/me",
+            headers={
+                "Authorization": f"Bearer {token}"
+            }
+        )
+
+        self.assertEqual(inactive_response.status_code, 401)
 
 
 if __name__ == "__main__":
