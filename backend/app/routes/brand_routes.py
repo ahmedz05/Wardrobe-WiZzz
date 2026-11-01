@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database import get_db
+from app.services.auth_dependencies import require_catalog_write_access
 
 from app.schemas.brand_schema import (
     BrandCreate,
@@ -22,6 +23,7 @@ router = APIRouter(
 
 @router.post(
     "/",
+    dependencies=[Depends(require_catalog_write_access)],
     response_model=BrandResponse
 )
 def create_new_brand(

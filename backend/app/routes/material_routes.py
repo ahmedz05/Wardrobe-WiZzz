@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database import get_db
+from app.services.auth_dependencies import require_catalog_write_access
 from app.schemas.material_schema import (
     MaterialCreate,
     MaterialResponse
@@ -22,6 +23,7 @@ router = APIRouter(
 
 @router.post(
     "/",
+    dependencies=[Depends(require_catalog_write_access)],
     response_model=MaterialResponse
 )
 def create_new_material(
@@ -68,6 +70,7 @@ def read_material(
 
 @router.put(
     "/{material_id}",
+    dependencies=[Depends(require_catalog_write_access)],
     response_model=MaterialResponse
 )
 def edit_material(
@@ -91,7 +94,8 @@ def edit_material(
 
 
 @router.delete(
-    "/{material_id}"
+    "/{material_id}",
+    dependencies=[Depends(require_catalog_write_access)],
 )
 def remove_material(
     material_id: int,

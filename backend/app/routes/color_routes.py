@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.database import get_db
+from app.services.auth_dependencies import require_catalog_write_access
 
 from app.schemas.color_schema import (
     ColorCreate,
@@ -35,6 +36,7 @@ router = APIRouter(
 
 @router.post(
     "/",
+    dependencies=[Depends(require_catalog_write_access)],
     response_model=ColorResponse,
 )
 def create_new_color(
@@ -192,6 +194,7 @@ def get_color(
 
 @router.put(
     "/{color_id}",
+    dependencies=[Depends(require_catalog_write_access)],
     response_model=ColorResponse,
 )
 def update_existing_color(
@@ -220,6 +223,7 @@ def update_existing_color(
 
 @router.delete(
     "/{color_id}",
+    dependencies=[Depends(require_catalog_write_access)],
 )
 def remove_color(
     color_id: int,

@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "reviewed_on": "2026-10-30",
+  "installation_root": "~/.agents/skills",
+  "resources": [
+    {
+      "repository": "affaan-m/ECC",
+      "commit": "91b5f6a371f7b06d2c3e0c208147c559e11f022c",
+      "license": "MIT",
+      "skills": [
+        {
+          "name": "flutter-dart-code-review",
+          "source_path": "skills/flutter-dart-code-review",
+          "files": [
+            {
+              "path": "SKILL.md",
+              "git_blob_sha1": "f8f902a86fe5360635db2eaab3fb791f9e7bbc52"
+            }
+          ]
+        },
+        {
+          "name": "ml-adoption-playbook",
+          "source_path": "skills/ml-adoption-playbook",
+          "files": [
+            {
+              "path": "SKILL.md",
+              "git_blob_sha1": "0b6d3a0b715e9bd8f9292cf45101feb65d196b15"
+            }
+          ]
+        }
+      ],
+      "license_git_blob_sha1": "b832b6f642312312367c07688dc7426db40a82ed"
+    },
+    {
+      "repository": "wshobson/agents",
+      "commit": "0874a27b17a22e2b7c2e2bcd725768e0803cad06",
+      "license": "MIT",
+      "skills": [
+        {
+          "name": "postgresql-table-design",
+          "source_path": "plugins/database-design/skills/postgresql-table-design",
+          "files": [
+            {
+              "path": "SKILL.md",
+              "git_blob_sha1": "40133536f73d0d345dd159d41c2e2b93c0a67bd6"
+            },
+            {
+              "path": "references/details.md",
+              "git_blob_sha1": "81b21f4a9e6378ccfe07f13e7a886509e191af26"
+            }
+          ]
+        },
+        {
+          "name": "python-type-safety",
+          "source_path": "plugins/python-development/skills/python-type-safety",
+          "files": [
+            {
+              "path": "SKILL.md",
+              "git_blob_sha1": "cce23771e21618d659eba1f7e8b1cd4e75926b0f"
+            },
+            {
+              "path": "references/details.md",
+              "git_blob_sha1": "9bcaab64b55ae9a17822e447355391f0fcf71c74"
+            }
+          ]
+        },
+        {
+          "name": "security-requirement-extraction",
+          "source_path": "plugins/security-scanning/skills/security-requirement-extraction",
+          "files": [
+            {
+              "path": "SKILL.md",
+              "git_blob_sha1": "a56194330bf9f70cc78a24539d1ce6c5fea8845d"
+            },
+            {
+              "path": "references/details.md",
+              "git_blob_sha1": "2adbdd8b830cda6c903c572e37329bc6c47b793d"
+            }
+          ]
+        }
+      ],
+      "license_git_blob_sha1": "326f0a55c96e672fedf9d807ca043c00df05ba0e"
+    }
+  ]
+}
